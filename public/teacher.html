@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHAIMA ONLINE ACADEMY — لوحة التحكم</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* الأنثوي العصري — Rosa Soft (ثيم دائم للأستاذة) */
+  --bg-1:#ffffff; --bg-2:#fff0f5; --bg-3:#fce4ec;
+  --accent:#ec407a; --accent-2:#f8bbd0; --accent-glow:rgba(236,64,122,.35);
+  --panel:#ffffff; --panel-soft:#fff6fa;
+  --border:rgba(248,187,208,.55); --border-strong:rgba(236,64,122,.3);
+  --text-1:#3a2433; --text-2:#6b7280; --text-3:#b48ba0;
+  --success:#22b07d; --warn:#e2a13a; --danger:#e0567c;
+  --radius:16px;
+  --font-display:'Tajawal',sans-serif;
+  --font-body:'IBM Plex Sans Arabic','Tajawal',sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:var(--font-body);
+  background:
+    radial-gradient(circle at 12% 0%, var(--bg-3), transparent 55%),
+    radial-gradient(circle at 92% 10%, var(--bg-2), transparent 45%),
+    var(--bg-1);
+  color:var(--text-1);
+  min-height:100vh; transition:background 400ms ease, color 400ms ease;
+}
+.hidden{display:none !important;}
+
+/* ===== شريط علوي بسيط وبارز ===== */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 26px; background:var(--panel); border-bottom:2px solid var(--border);
+}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{
+  width:36px; height:36px; border-radius:10px; background:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:900; color:#fff; font-size:15px;
+}
+.brand-text{font-family:var(--font-display); font-weight:900; font-size:15px;}
+.brand-text span{display:block; font-size:11px; font-weight:600; color:var(--text-3);}
+.top-right{display:flex; align-items:center; gap:14px;}
+.teacher-chip{font-size:13px; font-weight:700; color:var(--text-2);}
+.logout-btn{
+  border:1px solid var(--border-strong); background:transparent; color:var(--text-2);
+  padding:8px 14px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer;
+}
+.logout-btn:hover{background:var(--danger); border-color:var(--danger); color:#fff;}
+
+.theme-toggle{
+  position:relative; width:60px; height:34px; border-radius:999px;
+  border:1px solid var(--border-strong); background:var(--panel-soft);
+  cursor:pointer; display:flex; align-items:center; padding:3px;
+}
+.theme-toggle .knob{
+  width:26px; height:26px; border-radius:50%; background:var(--accent);
+  display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:14px;
+  transition:transform 450ms ease; transform:translateX(0);
+}
+[data-theme="female"] .theme-toggle .knob{ transform:translateX(-26px); }
+
+/* ===== شاشة الدخول ===== */
+.login-wrap{max-width:400px; margin:10vh auto 0; padding:0 20px;}
+.login-card{
+  background:var(--panel); border:2px solid var(--border); border-radius:18px; padding:34px 28px; text-align:center;
+}
+.login-title{font-family:var(--font-display); font-weight:900; font-size:19px; margin-bottom:6px;}
+.login-sub{font-size:12.5px; color:var(--text-3); margin-bottom:22px;}
+.field{margin-bottom:12px; text-align:right;}
+.field label{display:block; font-size:12px; font-weight:700; color:var(--text-2); margin-bottom:6px;}
+.field input, .field select, .field textarea{
+  width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid var(--border-strong);
+  background:var(--panel-soft); color:var(--text-1); font-size:14px; font-family:var(--font-body); outline:none;
+}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--accent);}
+.btn-primary{
+  border:none; padding:13px 20px; border-radius:11px; width:100%;
+  background:var(--accent); color:#fff; font-weight:800; font-size:14px; cursor:pointer; font-family:var(--font-body);
+}
+.btn-primary:hover{background:var(--accent-2);}
+.btn-primary:disabled{opacity:.55; cursor:not-allowed;}
+.btn-secondary{
+  border:1.5px solid var(--border-strong); background:transparent; color:var(--text-1);
+  padding:11px 18px; border-radius:11px; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body);
+}
+.form-error{
+  margin-top:12px; padding:10px 12px; border-radius:9px; font-size:12.5px;
+  background:rgba(248,113,113,.14); color:var(--danger); border:1px solid rgba(248,113,113,.3);
+}
+
+/* ===== تخطيط اللوحة ===== */
+.layout{display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - 65px);}
+.sidebar{background:var(--panel); border-left:2px solid var(--border); padding:18px 14px;}
+.side-item{
+  display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:10px; margin-bottom:6px;
+  color:var(--text-2); font-size:14px; font-weight:700; cursor:pointer;
+}
+.side-item.active{background:var(--accent); color:#fff;}
+.side-item:not(.active):hover{background:var(--panel-soft); color:var(--text-1);}
+.content{padding:26px 30px 60px;}
+
+.page-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;}
+.page-title{font-family:var(--font-display); font-weight:900; font-size:21px;}
+
+/* بطاقات إحصائيات — بسيطة وبارزة بلا زخرفة زائدة */
+.stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;}
+.stat-card{
+  background:var(--panel); border:2px solid var(--border); border-radius:14px; padding:18px 20px;
+  box-shadow:0 8px 28px rgba(236,64,122,.1);
+  transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.stat-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px var(--accent-glow);
+  border-color:var(--border-strong);
+}
+.stat-label{font-size:12.5px; font-weight:700; color:var(--text-3); margin-bottom:10px;}
+.stat-value{font-family:var(--font-display); font-size:32px; font-weight:900; color:var(--accent);}
+
+.section-title{font-family:var(--font-display); font-weight:800; font-size:16px; margin:26px 0 14px;}
+.section-title:first-child{margin-top:0;}
+
+.panel{background:var(--panel); border:2px solid var(--border); border-radius:14px; overflow:hidden;}
+.panel-pad{padding:20px;}
+
+/* جدول */
+.trow{
+  display:grid; grid-template-columns:1.8fr 1fr 1.5fr 1fr 1.6fr; align-items:center;
+  padding:13px 18px; border-bottom:1px solid var(--border); font-size:13.5px; gap:8px;
+}
+.trow.head{color:var(--text-3); font-weight:800; font-size:11.5px;}
+.trow:last-child{border-bottom:none;}
+.strong-cell{font-weight:800;}
+.code{font-family:monospace; color:var(--accent); font-weight:800; letter-spacing:1px;}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:999px; font-size:11.5px; font-weight:800; width:fit-content;}
+.pill.on{background:rgba(52,211,153,.15); color:var(--success);}
+.pill.off{background:rgba(248,113,113,.15); color:var(--danger);}
+.actions-cell{display:flex; gap:6px; flex-wrap:wrap;}
+.mini-btn{
+  border:1.5px solid var(--border-strong); background:transparent; color:var(--text-2);
+  font-size:11.5px; font-weight:700; padding:6px 11px; border-radius:8px; cursor:pointer;
+}
+.mini-btn:hover{background:var(--accent); color:#fff; border-color:var(--accent);}
+.mini-btn.danger:hover{background:var(--danger); border-color:var(--danger);}
+
+/* بطاقات الدروس */
+.lesson-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+.lesson-card{background:var(--panel); border:2px solid var(--border); border-radius:14px; overflow:hidden;}
+.lesson-thumb{
+  height:96px; display:flex; align-items:center; justify-content:center;
+  background:var(--accent); color:#fff; font-family:var(--font-display); font-weight:900; font-size:13px;
+}
+.lesson-body{padding:14px;}
+.lesson-title{font-weight:800; font-size:13.5px; margin-bottom:8px;}
+.tag-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+.tag{font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--panel-soft); border:1px solid var(--border); color:var(--text-2);}
+.lesson-foot{display:flex; justify-content:space-between; align-items:center;}
+.lesson-views{font-size:11px; color:var(--text-3);}
+
+/* نافذة إضافة درس */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center;
+  z-index:200; padding:20px;
+}
+.modal-box{width:100%; max-width:560px; max-height:90vh; overflow-y:auto; background:var(--panel); border:2px solid var(--border-strong); border-radius:16px; padding:24px;}
+.modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+.modal-title{font-family:var(--font-display); font-weight:900; font-size:17px;}
+.modal-close{border:none; background:var(--panel-soft); color:var(--text-2); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:15px;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.field-note{font-size:11px; color:var(--text-3); margin-top:4px; line-height:1.7;}
+.placement-box{
+  background:var(--panel-soft); border:1.5px dashed var(--border-strong); border-radius:12px; padding:14px; margin:14px 0;
+}
+.placement-box .field-note{margin-top:8px;}
+.audio-optional-box{
+  background:var(--panel-soft); border:1.5px solid var(--border); border-radius:12px; padding:14px; margin-top:14px;
+}
+.audio-optional-box label{font-size:12px; font-weight:700; color:var(--text-2); display:flex; align-items:center; gap:6px; margin-bottom:8px;}
+
+.code-reveal{
+  text-align:center; padding:22px; background:var(--panel-soft); border:2px dashed var(--accent); border-radius:14px; margin-top:16px;
+}
+.code-reveal .code-big{font-family:monospace; font-size:24px; font-weight:900; color:var(--accent); letter-spacing:3px; margin:10px 0;}
+
+.empty-note{text-align:center; padding:40px 20px; color:var(--text-3); font-size:13px;}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{display:flex; overflow-x:auto; border-left:none; border-bottom:2px solid var(--border);}
+  .side-item{white-space:nowrap;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .lesson-grid{grid-template-columns:1fr 1fr;}
+  .trow{grid-template-columns:1.6fr 1fr 1.4fr;}
+  .trow > div:nth-child(2){display:none;}
+  .trow > div:nth-child(4){display:none;}
+  .field-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ تسجيل دخول الأستاذ ============ -->
+<div id="view-login">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CA</div>
+      <div class="brand-text">CHAIMA ONLINE ACADEMY<span>لوحة التحكم</span></div>
+    </div>
+  </div>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-title">دخول لوحة التحكم</div>
+      <div class="login-sub">هذه الواجهة مخصّصة للأستاذة فقط</div>
+      <div class="field">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="teacherEmail" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input type="password" id="teacherPassword" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="loginBtn" onclick="teacherLogin()">دخول</button>
+      <div id="loginError" class="form-error hidden"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ اللوحة بعد الدخول ============ -->
+<div id="view-dashboard" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CA</div>
+      <div class="brand-text">CHAIMA ONLINE ACADEMY<span>لوحة التحكم</span></div>
+    </div>
+    <div class="top-right">
+      <div class="teacher-chip" id="teacherNameChip"></div>
+      <button class="logout-btn" onclick="teacherLogout()">تسجيل خروج</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="side-item active" data-page="home">🏠 الرئيسية</div>
+      <div class="side-item" data-page="lessons">🎬 الدروس</div>
+      <div class="side-item" data-page="flashcards">🃏 فلاش كارد</div>
+      <div class="side-item" data-page="students">👥 التلاميذ ورموز التفعيل</div>
+      <div class="side-item" data-page="stats">📊 الإحصائيات</div>
+    </div>
+
+    <div class="content">
+
+      <!-- الرئيسية -->
+      <div id="page-home">
+        <div class="page-head"><div class="page-title">نظرة عامة</div></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">👥 تلاميذ برمز نشط</div><div class="stat-value" id="s-active">—</div></div>
+          <div class="stat-card"><div class="stat-label">📹 دروس مرفوعة</div><div class="stat-value" id="s-lessons">—</div></div>
+          <div class="stat-card"><div class="stat-label">👁️ مشاهدات هذا الأسبوع</div><div class="stat-value" id="s-views">—</div></div>
+          <div class="stat-card"><div class="stat-label">⭐ الأكثر مشاهدة</div><div class="stat-value" id="s-top" style="font-size:15px;">—</div></div>
+        </div>
+
+        <div class="section-title">أحدث الدروس</div>
+        <div class="lesson-grid" id="home-lessons"></div>
+      </div>
+
+      <!-- الدروس -->
+      <div id="page-lessons" class="hidden">
+        <div class="page-head">
+          <div class="page-title">الدروس</div>
+          <button class="btn-primary" style="width:auto;" onclick="openLessonModal()">+ إضافة درس جديد</button>
+        </div>
+        <div class="lesson-grid" id="lessons-grid"></div>
+        <div id="lessons-empty" class="empty-note hidden">لم تُضيفي أي درس بعد. اضغطي "إضافة درس جديد" للبدء.</div>
+      </div>
+
+      <!-- فلاش كارد -->
+      <div id="page-flashcards" class="hidden">
+        <div class="page-head">
+          <div class="page-title">فلاش كارد</div>
+          <button class="btn-primary" style="width:auto;" onclick="openFlashcardModal()">+ إضافة بطاقة جديدة</button>
+        </div>
+        <div class="panel">
+          <div class="trow head" style="grid-template-columns:2.4fr 1fr 1fr .6fr;"><div>السؤال</div><div>المهارة</div><div>المستوى</div><div>إجراءات</div></div>
+          <div id="flashcards-rows"></div>
+        </div>
+        <div id="flashcards-empty" class="empty-note hidden">لا توجد بطاقات بعد. اضغطي "إضافة بطاقة جديدة" للبدء.</div>
+      </div>
+
+      <!-- التلاميذ -->
+      <div id="page-students" class="hidden">
+        <div class="page-head">
+          <div class="page-title">التلاميذ ورموز التفعيل</div>
+          <button class="btn-primary" style="width:auto;" onclick="openStudentModal()">+ إضافة تلميذ</button>
+        </div>
+        <div class="panel">
+          <div class="trow head"><div>التلميذ</div><div>الجنس</div><div>رمز التفعيل</div><div>الحالة</div><div>إجراءات</div></div>
+          <div id="students-rows"></div>
+        </div>
+        <div id="students-empty" class="empty-note hidden">لا يوجد تلاميذ بعد.</div>
+      </div>
+
+      <!-- الإحصائيات -->
+      <div id="page-stats" class="hidden">
+        <div class="page-head"><div class="page-title">الإحصائيات</div></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">👥 تلاميذ برمز نشط</div><div class="stat-value" id="stat2-active">—</div></div>
+          <div class="stat-card"><div class="stat-label">📹 إجمالي الدروس</div><div class="stat-value" id="stat2-lessons">—</div></div>
+          <div class="stat-card"><div class="stat-label">👁️ مشاهدات آخر 7 أيام</div><div class="stat-value" id="stat2-views">—</div></div>
+        </div>
+        <div class="section-title">الأكثر مشاهدة</div>
+        <div class="panel panel-pad" id="top-lessons-list"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- نافذة إضافة درس -->
+<div id="lessonModal" class="modal-overlay hidden" onclick="if(event.target===this) closeLessonModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="lessonModalTitle">إضافة درس جديد</div>
+      <button class="modal-close" onclick="closeLessonModal()">✕</button>
+    </div>
+    <div id="lessonEditNote" class="field-note hidden" style="margin-bottom:14px;">تعديل الملف (الفيديو/الصورة) غير متاح هنا — لتغييره احذفي الدرس وأضيفيه من جديد. الحقول النصية والتصنيف يمكن حفظها هنا مباشرة.</div>
+    <form id="lessonForm" onsubmit="submitLesson(event)">
+      <div class="field">
+        <label>عنوان الدرس</label>
+        <input type="text" id="lTitle" required>
+      </div>
+      <div class="field">
+        <label>وصف مختصر (اختياري)</label>
+        <textarea id="lDescription" rows="2"></textarea>
+      </div>
+      <div class="field">
+        <label>نوع المحتوى</label>
+        <select id="lType" onchange="onTypeChange()">
+          <option value="VIDEO">🎬 فيديو مسجل</option>
+          <option value="FILE">صورة / PDF</option>
+          <option value="AUDIO">تسجيل صوتي</option>
+          <option value="LIVE">🔴 بث مباشر</option>
+          <option value="EXERCISE">🧩 تمرين تطبيقي (حدّدي المستوى أدناه)</option>
+          <option value="TOPIC">📝 موضوع وحل نموذجي (بكالوريا)</option>
+        </select>
+      </div>
+
+      <div class="placement-box">
+        <div class="field-row">
+          <div class="field" style="margin-bottom:0;">
+            <label>أين يُدرج هذا الدرس؟ (المهارة)</label>
+            <select id="lSkill">
+              <option value="GRAMMAR">قواعد</option>
+              <option value="SPEAKING">محادثة</option>
+              <option value="LISTENING">استماع</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>المستوى</label>
+            <select id="lLevel">
+              <option value="BEGINNER">مبتدئ</option>
+              <option value="INTERMEDIATE">متوسط</option>
+              <option value="ADVANCED">متقدم</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-note">هذا التصنيف يحدّد القسم الذي سيظهر فيه الدرس مباشرة عند التلاميذ.</div>
+      </div>
+
+      <div class="field" id="fileFieldWrap">
+        <label id="fileFieldLabel">الملف الرئيسي</label>
+        <input type="file" id="lFile" accept="video/mp4,video/webm,application/pdf,image/png,image/jpeg,image/webp,audio/*">
+      </div>
+
+      <div class="audio-optional-box" id="audioOptionalBox">
+        <label>🎧 تسجيل صوتي إضافي (اختياري)</label>
+        <input type="file" id="lAudio" accept="audio/*">
+        <div class="field-note">أضيفي شرحًا صوتيًا مرافقًا لهذا الدرس إن رغبتِ — هذا الحقل اختياري دائمًا.</div>
+      </div>
+
+      <div style="margin-top:18px; display:flex; gap:10px;">
+        <button type="submit" class="btn-primary" id="lessonSubmitBtn">حفظ الدرس</button>
+        <button type="button" class="btn-secondary" onclick="closeLessonModal()">إلغاء</button>
+      </div>
+      <div id="lessonError" class="form-error hidden"></div>
+    </form>
+  </div>
+</div>
+
+<!-- نافذة إضافة/تعديل تلميذ -->
+<div id="studentModal" class="modal-overlay hidden" onclick="if(event.target===this) closeStudentModal()">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="modal-title" id="studentModalTitle">إضافة تلميذ جديد</div>
+      <button class="modal-close" onclick="closeStudentModal()">✕</button>
+    </div>
+    <div id="studentFormWrap">
+      <div class="field">
+        <label>اسم التلميذ</label>
+        <input type="text" id="newStudentName">
+      </div>
+      <div class="field">
+        <label>الجنس</label>
+        <select id="newStudentGender">
+          <option value="MALE">ذكر</option>
+          <option value="FEMALE">أنثى</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="studentSubmitBtn" onclick="submitStudent()">إنشاء ورمز تفعيل</button>
+      <div id="studentError" class="form-error hidden"></div>
+    </div>
+    <div id="studentCodeReveal" class="code-reveal hidden">
+      <div id="codeRevealMessage">تم إنشاء التلميذ. شاركي هذا الرمز معه/معها — لن يظهر مرة أخرى:</div>
+      <div class="code-big" id="revealedCode"></div>
+      <button class="btn-secondary" onclick="closeStudentModal()">تم</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة إضافة بطاقة فلاش كارد -->
+<div id="flashcardModal" class="modal-overlay hidden" onclick="if(event.target===this) closeFlashcardModal()">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-head">
+      <div class="modal-title">إضافة بطاقة فلاش كارد</div>
+      <button class="modal-close" onclick="closeFlashcardModal()">✕</button>
+    </div>
+    <div class="field">
+      <label>السؤال</label>
+      <input type="text" id="fcQuestion" placeholder="مثال: ما معنى كلمة Apple؟">
+    </div>
+    <div class="field">
+      <label>الخيار الأول</label>
+      <input type="text" id="fcOptionA">
+    </div>
+    <div class="field">
+      <label>الخيار الثاني</label>
+      <input type="text" id="fcOptionB">
+    </div>
+    <div class="field">
+      <label>الخيار الثالث</label>
+      <input type="text" id="fcOptionC">
+    </div>
+    <div class="field">
+      <label>الإجابة الصحيحة</label>
+      <select id="fcCorrect">
+        <option value="0">الخيار الأول</option>
+        <option value="1">الخيار الثاني</option>
+        <option value="2">الخيار الثالث</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>المهارة (اختياري)</label>
+        <select id="fcSkill">
+          <option value="">بدون تحديد</option>
+          <option value="GRAMMAR">قواعد</option>
+          <option value="SPEAKING">محادثة</option>
+          <option value="LISTENING">استماع</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>المستوى (اختياري)</label>
+        <select id="fcLevel">
+          <option value="">بدون تحديد</option>
+          <option value="BEGINNER">مبتدئ</option>
+          <option value="INTERMEDIATE">متوسط</option>
+          <option value="ADVANCED">متقدم</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" id="fcSubmitBtn" onclick="submitFlashcard()">حفظ البطاقة</button>
+    <div id="fcError" class="form-error hidden"></div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  apiBase: (window.CHAIMA_CONFIG && window.CHAIMA_CONFIG.apiBase) || `http://${window.location.hostname}:4000/api`
+};
+
+/* ====== الجلسة ====== */
+let session = null; // { accessToken, teacher }
+
+async function apiFetch(path, options = {}){
+  options.headers = Object.assign({}, options.headers, session ? { Authorization: 'Bearer ' + session.accessToken } : {});
+  let res = await fetch(CONFIG.apiBase + path, Object.assign({ credentials: 'include' }, options));
+  if (res.status === 401 && session) {
+    const r = await fetch(CONFIG.apiBase + '/auth/refresh', { method: 'POST', credentials: 'include' });
+    if (r.ok) {
+      const data = await r.json();
+      session.accessToken = data.accessToken;
+      options.headers.Authorization = 'Bearer ' + session.accessToken;
+      res = await fetch(CONFIG.apiBase + path, Object.assign({ credentials: 'include' }, options));
+    }
+  }
+  return res;
+}
+
+async function teacherLogin(){
+  const email = document.getElementById('teacherEmail').value.trim();
+  const password = document.getElementById('teacherPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  err.classList.add('hidden');
+  if (!email || !password) return;
+  btn.disabled = true; btn.textContent = 'جارٍ الدخول...';
+  try {
+    const res = await fetch(CONFIG.apiBase + '/auth/teacher/login', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, deviceId: 'teacher-dashboard-web' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'تعذّر تسجيل الدخول');
+    session = { accessToken: data.accessToken, teacher: data.teacher };
+    document.getElementById('teacherNameChip').textContent = data.teacher.name;
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-dashboard').classList.remove('hidden');
+    initDashboard();
+  } catch(e){
+    err.textContent = e.message;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'دخول';
+  }
+}
+document.getElementById('teacherPassword').addEventListener('keydown', (e)=>{ if(e.key==='Enter') teacherLogin(); });
+
+async function teacherLogout(){
+  try { await apiFetch('/auth/logout', { method: 'POST' }); } catch(e){}
+  session = null;
+  window.location.href = './student.html';
+}
+
+/* ====== التنقل بين الأقسام ====== */
+document.querySelectorAll('.side-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.side-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    const page = item.dataset.page;
+    ['home','lessons','flashcards','students','stats'].forEach(p=>{
+      document.getElementById('page-'+p).classList.toggle('hidden', p!==page);
+    });
+    if (page === 'lessons') loadLessons();
+    if (page === 'flashcards') loadFlashcards();
+    if (page === 'students') loadStudents();
+    if (page === 'stats') loadStats();
+  });
+});
+
+function initDashboard(){
+  loadOverview();
+  loadLessons();
+}
+
+const SKILL_LABEL = { GRAMMAR:'قواعد', SPEAKING:'محادثة', LISTENING:'استماع' };
+const LEVEL_LABEL = { BEGINNER:'مبتدئ', INTERMEDIATE:'متوسط', ADVANCED:'متقدم' };
+const TYPE_ICON = { VIDEO:'🎥 فيديو', FILE:'📄 ملف', AUDIO:'🎧 صوت', LIVE:'📡 بث مباشر' };
+
+/* ====== نظرة عامة ====== */
+async function loadOverview(){
+  const res = await apiFetch('/stats/overview');
+  if (!res.ok) return;
+  const d = await res.json();
+  document.getElementById('s-active').textContent = d.activeStudents;
+  document.getElementById('s-lessons').textContent = d.totalLessons;
+  document.getElementById('s-views').textContent = d.weeklyViews;
+  document.getElementById('s-top').textContent = d.mostViewedLessons?.[0]?.title || '—';
+
+  document.getElementById('stat2-active').textContent = d.activeStudents;
+  document.getElementById('stat2-lessons').textContent = d.totalLessons;
+  document.getElementById('stat2-views').textContent = d.weeklyViews;
+
+  const list = document.getElementById('top-lessons-list');
+  list.innerHTML = (d.mostViewedLessons && d.mostViewedLessons.length)
+    ? d.mostViewedLessons.map(l => `<div class="trow" style="grid-template-columns:3fr 1fr;"><div class="strong-cell">${escapeHtml(l.title)}</div><div>${l.views} مشاهدة</div></div>`).join('')
+    : '<div class="empty-note">لا توجد بيانات مشاهدة بعد.</div>';
+}
+
+/* ====== الدروس ====== */
+let allLessons = [];
+let studentsCache = [];
+async function loadLessons(){
+  const res = await apiFetch('/lessons');
+  allLessons = res.ok ? await res.json() : [];
+  renderLessons('lessons-grid', allLessons, true);
+  renderLessons('home-lessons', allLessons.slice(0,3), false);
+  document.getElementById('lessons-empty').classList.toggle('hidden', allLessons.length>0);
+}
+
+function renderLessons(containerId, list, withDelete){
+  const el = document.getElementById(containerId);
+  el.innerHTML = list.map(l => `
+    <div class="lesson-card">
+      <div class="lesson-thumb">${TYPE_ICON[l.type]||l.type}</div>
+      <div class="lesson-body">
+        <div class="lesson-title">${escapeHtml(l.title)}</div>
+        <div class="tag-row">
+          <span class="tag">${SKILL_LABEL[l.skill]||l.skill}</span>
+          <span class="tag">${LEVEL_LABEL[l.level]||l.level}</span>
+          ${l.audioUrl ? '<span class="tag">🎧 صوت إضافي</span>' : ''}
+        </div>
+        <div class="lesson-foot">
+          <span class="lesson-views">${new Date(l.createdAt).toLocaleDateString('ar')}</span>
+          ${withDelete ? `<span style="display:flex; gap:6px;"><button class="mini-btn" onclick="openLessonModal('${l.id}')">تعديل</button><button class="mini-btn danger" onclick="deleteLesson('${l.id}')">حذف</button></span>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteLesson(id){
+  if (!confirm('حذف هذا الدرس نهائيًا؟')) return;
+  await apiFetch('/lessons/' + id, { method: 'DELETE' });
+  loadLessons();
+  loadOverview();
+}
+
+/* ====== نافذة إضافة/تعديل درس ====== */
+let editingLessonId = null;
+
+function openLessonModal(lessonId){
+  editingLessonId = lessonId || null;
+  document.getElementById('lessonForm').reset();
+  document.getElementById('lessonError').classList.add('hidden');
+
+  const fileWrap = document.getElementById('fileFieldWrap');
+  const audioBox = document.getElementById('audioOptionalBox');
+  const editNote = document.getElementById('lessonEditNote');
+  const submitBtn = document.getElementById('lessonSubmitBtn');
+
+  if (editingLessonId) {
+    const l = allLessons.find(x => x.id === editingLessonId);
+    document.getElementById('lessonModalTitle').textContent = 'تعديل الدرس';
+    submitBtn.textContent = 'حفظ التعديلات';
+    editNote.classList.remove('hidden');
+    fileWrap.classList.add('hidden');
+    audioBox.classList.add('hidden');
+    if (l) {
+      document.getElementById('lTitle').value = l.title || '';
+      document.getElementById('lDescription').value = l.description || '';
+      document.getElementById('lType').value = l.type;
+      document.getElementById('lSkill').value = l.skill;
+      document.getElementById('lLevel').value = l.level;
+    }
+  } else {
+    document.getElementById('lessonModalTitle').textContent = 'إضافة درس جديد';
+    submitBtn.textContent = 'حفظ الدرس';
+    editNote.classList.add('hidden');
+    onTypeChange();
+  }
+  document.getElementById('lessonModal').classList.remove('hidden');
+}
+function closeLessonModal(){
+  document.getElementById('lessonModal').classList.add('hidden');
+  editingLessonId = null;
+}
+
+function onTypeChange(){
+  const type = document.getElementById('lType').value;
+  const fileLabel = document.getElementById('fileFieldLabel');
+  const audioBox = document.getElementById('audioOptionalBox');
+  const fileWrap = document.getElementById('fileFieldWrap');
+  if (type === 'LIVE') {
+    fileWrap.classList.add('hidden');
+  } else {
+    fileWrap.classList.remove('hidden');
+    fileLabel.textContent = type === 'AUDIO' ? 'الملف الصوتي' : type === 'VIDEO' ? 'ملف الفيديو' : 'الصورة أو PDF';
+  }
+  // عند اختيار "صوت" كنوع رئيسي، لا حاجة لحقل صوت إضافي منفصل
+  audioBox.classList.toggle('hidden', type === 'AUDIO');
+}
+
+async function submitLesson(e){
+  e.preventDefault();
+  const btn = document.getElementById('lessonSubmitBtn');
+  const err = document.getElementById('lessonError');
+  err.classList.add('hidden');
+
+  const type = document.getElementById('lType').value;
+  const title = document.getElementById('lTitle').value.trim();
+  const description = document.getElementById('lDescription').value.trim();
+  const skill = document.getElementById('lSkill').value;
+  const level = document.getElementById('lLevel').value;
+
+  btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+  try {
+    if (editingLessonId) {
+      const res = await apiFetch('/lessons/' + editingLessonId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, type, skill, level })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'تعذّر حفظ التعديلات');
+      closeLessonModal();
+      loadLessons();
+      loadOverview();
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('title', title);
+    fd.append('description', description);
+    fd.append('type', type);
+    fd.append('skill', skill);
+    fd.append('level', level);
+
+    const fileInput = document.getElementById('lFile');
+    if (fileInput.files[0]) fd.append('file', fileInput.files[0]);
+    const audioInput = document.getElementById('lAudio');
+    if (audioInput.files[0]) fd.append('audio', audioInput.files[0]);
+
+    const res = await apiFetch('/lessons', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'تعذّر حفظ الدرس');
+    closeLessonModal();
+    loadLessons();
+    loadOverview();
+  } catch(e2){
+    err.textContent = e2.message;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = editingLessonId ? 'حفظ التعديلات' : 'حفظ الدرس';
+  }
+}
+
+/* ====== فلاش كارد ====== */
+async function loadFlashcards(){
+  const res = await apiFetch('/flashcards');
+  const cards = await res.json();
+  const rowsEl = document.getElementById('flashcards-rows');
+  const emptyEl = document.getElementById('flashcards-empty');
+  if (!cards.length){ rowsEl.innerHTML=''; emptyEl.classList.remove('hidden'); return; }
+  emptyEl.classList.add('hidden');
+  rowsEl.innerHTML = cards.map(c => `
+    <div class="trow" style="grid-template-columns:2.4fr 1fr 1fr .6fr;">
+      <div class="strong-cell">${escapeHtml(c.question)}</div>
+      <div>${SKILL_LABEL[c.skill] || '—'}</div>
+      <div>${LEVEL_LABEL[c.level] || '—'}</div>
+      <div class="actions-cell"><button class="mini-btn danger" onclick="deleteFlashcard('${c.id}')">حذف</button></div>
+    </div>`).join('');
+}
+
+function openFlashcardModal(){
+  ['fcQuestion','fcOptionA','fcOptionB','fcOptionC'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fcCorrect').value = '0';
+  document.getElementById('fcSkill').value = '';
+  document.getElementById('fcLevel').value = '';
+  document.getElementById('fcError').classList.add('hidden');
+  document.getElementById('flashcardModal').classList.remove('hidden');
+}
+function closeFlashcardModal(){
+  document.getElementById('flashcardModal').classList.add('hidden');
+}
+
+async function submitFlashcard(){
+  const err = document.getElementById('fcError');
+  err.classList.add('hidden');
+  const body = {
+    question: document.getElementById('fcQuestion').value.trim(),
+    optionA: document.getElementById('fcOptionA').value.trim(),
+    optionB: document.getElementById('fcOptionB').value.trim(),
+    optionC: document.getElementById('fcOptionC').value.trim(),
+    correctIndex: Number(document.getElementById('fcCorrect').value),
+  };
+  const skill = document.getElementById('fcSkill').value;
+  const level = document.getElementById('fcLevel').value;
+  if (skill) body.skill = skill;
+  if (level) body.level = level;
+  if (!body.question || !body.optionA || !body.optionB || !body.optionC) {
+    err.textContent = 'الرجاء تعبئة السؤال وكل الخيارات الثلاثة';
+    err.classList.remove('hidden');
+    return;
+  }
+  const res = await apiFetch('/flashcards', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) { err.textContent = data?.error?.message || 'تعذّر حفظ البطاقة'; err.classList.remove('hidden'); return; }
+  closeFlashcardModal();
+  loadFlashcards();
+}
+
+async function deleteFlashcard(id){
+  if (!confirm('حذف هذه البطاقة نهائيًا؟')) return;
+  await apiFetch('/flashcards/' + id, { method:'DELETE' });
+  loadFlashcards();
+}
+
+/* ====== التلاميذ ====== */
+async function loadStudents(){
+  const res = await apiFetch('/students');
+  const students = res.ok ? await res.json() : [];
+  const rowsEl = document.getElementById('students-rows');
+  document.getElementById('students-empty').classList.toggle('hidden', students.length>0);
+  studentsCache = students;
+  rowsEl.innerHTML = students.map(s => `
+    <div class="trow">
+      <div class="strong-cell">${escapeHtml(s.name)}</div>
+      <div>${s.gender === 'FEMALE' ? '♀ أنثى' : '♂ ذكر'}</div>
+      <div class="code">${s.activationCode ? s.activationCode.maskedCode : '—'}</div>
+      <div>${s.activationCode
+        ? `<span class="pill ${s.activationCode.status==='ACTIVE'?'on':'off'}">${s.activationCode.status==='ACTIVE'?'نشط':'معطل'}</span>`
+        : '—'}</div>
+      <div class="actions-cell">
+        ${s.activationCode ? `<button class="mini-btn" onclick="toggleActivation('${s.activationCode.id}','${s.activationCode.status}')">${s.activationCode.status==='ACTIVE'?'تعطيل':'تفعيل'}</button>` : ''}
+        ${s.activationCode && s.activationCode.boundDevice ? `<button class="mini-btn" onclick="resetDevice('${s.activationCode.id}')">تصفير الجهاز</button>` : ''}
+        <button class="mini-btn" onclick="regenerateCode('${s.id}', '${escapeHtml(s.name)}')">توليد رمز جديد</button>
+        <button class="mini-btn" onclick="openStudentModal('${s.id}')">تعديل</button>
+        <button class="mini-btn danger" onclick="deleteStudent('${s.id}')">حذف</button>
+      </div>
+    </div>`).join('');
+}
+
+async function regenerateCode(studentId, studentName){
+  if (!confirm(`توليد رمز تفعيل جديد لـ "${studentName}"؟\nالرمز القديم سيتوقف عن العمل فورًا حتى لو كان التلميذ يعرفه.`)) return;
+  const res = await apiFetch('/students/' + studentId + '/regenerate-code', { method: 'POST' });
+  const data = await res.json();
+  if (!res.ok) { alert(data?.error?.message || 'تعذّر توليد رمز جديد'); return; }
+
+  editingStudentId = null;
+  document.getElementById('studentModalTitle').textContent = 'الرمز الجديد لـ ' + studentName;
+  document.getElementById('studentFormWrap').classList.add('hidden');
+  document.getElementById('studentCodeReveal').classList.remove('hidden');
+  document.getElementById('codeRevealMessage').textContent = 'تم توليد رمز جديد. شاركيه مع التلميذ — لن يظهر مرة أخرى، والرمز القديم توقف عن العمل:';
+  document.getElementById('revealedCode').textContent = data.activationCode;
+  document.getElementById('studentModal').classList.remove('hidden');
+}
+
+async function deleteStudent(id){
+  if (!confirm('حذف هذا التلميذ نهائيًا؟ سيُحذف رمز تفعيله أيضًا.')) return;
+  await apiFetch('/students/' + id, { method: 'DELETE' });
+  loadStudents();
+  loadOverview();
+}
+
+async function toggleActivation(id, currentStatus){
+  const next = currentStatus === 'ACTIVE' ? 'DISABLED' : 'ACTIVE';
+  await apiFetch(`/students/activation-codes/${id}/status`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: next })
+  });
+  loadStudents();
+}
+
+async function resetDevice(id){
+  if (!confirm('إعادة تعيين الجهاز المربوط بهذا الرمز؟ سيتمكن التلميذ من الدخول من جهاز جديد.')) return;
+  await apiFetch(`/auth/activation-codes/${id}/reset-device`, { method: 'POST' });
+  loadStudents();
+}
+
+let editingStudentId = null;
+
+function openStudentModal(studentId){
+  editingStudentId = studentId || null;
+  document.getElementById('studentFormWrap').classList.remove('hidden');
+  document.getElementById('studentCodeReveal').classList.add('hidden');
+  document.getElementById('studentError').classList.add('hidden');
+
+  if (editingStudentId) {
+    const s = studentsCache.find(x => x.id === editingStudentId);
+    document.getElementById('studentModalTitle').textContent = 'تعديل بيانات التلميذ';
+    document.getElementById('studentSubmitBtn').textContent = 'حفظ التعديلات';
+    document.getElementById('newStudentName').value = s ? s.name : '';
+    document.getElementById('newStudentGender').value = s ? s.gender : 'MALE';
+  } else {
+    document.getElementById('studentModalTitle').textContent = 'إضافة تلميذ جديد';
+    document.getElementById('studentSubmitBtn').textContent = 'إنشاء ورمز تفعيل';
+    document.getElementById('newStudentName').value = '';
+    document.getElementById('newStudentGender').value = 'MALE';
+  }
+  document.getElementById('studentModal').classList.remove('hidden');
+}
+function closeStudentModal(){
+  document.getElementById('studentModal').classList.add('hidden');
+  editingStudentId = null;
+  loadStudents();
+  loadOverview();
+}
+
+async function submitStudent(){
+  const name = document.getElementById('newStudentName').value.trim();
+  const gender = document.getElementById('newStudentGender').value;
+  const err = document.getElementById('studentError');
+  err.classList.add('hidden');
+  if (!name) return;
+  try {
+    if (editingStudentId) {
+      const res = await apiFetch('/students/' + editingStudentId, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, gender })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'تعذّر حفظ التعديلات');
+      closeStudentModal();
+      return;
+    }
+    const res = await apiFetch('/students', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, gender })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'تعذّر إنشاء التلميذ');
+    document.getElementById('studentFormWrap').classList.add('hidden');
+    document.getElementById('studentCodeReveal').classList.remove('hidden');
+    document.getElementById('codeRevealMessage').textContent = 'تم إنشاء التلميذ. شاركي هذا الرمز معه/معها — لن يظهر مرة أخرى:';
+    document.getElementById('revealedCode').textContent = data.activationCode;
+  } catch(e){
+    err.textContent = e.message;
+    err.classList.remove('hidden');
+  }
+}
+
+/* ====== الإحصائيات ====== */
+async function loadStats(){ loadOverview(); }
+
+function escapeHtml(s){
+  const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML;
+}
+</script>
+</body>
+</html>

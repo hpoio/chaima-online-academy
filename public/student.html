@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHAIMA ONLINE ACADEMY — منصة التلميذ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root, [data-theme="male"]{
+  /* الذكوري البلوري — Frosted Blue Glassmorphism */
+  --bg-1:#eaf4ff; --bg-2:#d6ebfd; --bg-3:#c3e0fb;
+  --accent:#0d47a1; --accent-2:#1976d2; --accent-glow:rgba(25,118,210,.35);
+  --panel:rgba(255,255,255,.55); --panel-strong:rgba(255,255,255,.8);
+  --border:rgba(255,255,255,.5); --border-strong:rgba(13,71,161,.25);
+  --text-1:#0d1b3d; --text-2:#3d5a90; --text-3:#7891c2;
+  --success:#1fa872; --warn:#c9861f; --danger:#d64545;
+  --shadow:0 8px 32px rgba(13,71,161,.15); --radius:18px;
+  --card-blur:14px;
+  --font-display:'Tajawal',sans-serif;
+  --font-body:'IBM Plex Sans Arabic','Tajawal',sans-serif;
+}
+[data-theme="female"]{
+  /* الأنثوي العصري — Rosa Soft */
+  --bg-1:#ffffff; --bg-2:#fff0f5; --bg-3:#fce4ec;
+  --accent:#ec407a; --accent-2:#f8bbd0; --accent-glow:rgba(236,64,122,.35);
+  --panel:rgba(255,255,255,.97); --panel-strong:#ffffff;
+  --border:rgba(248,187,208,.55); --border-strong:rgba(236,64,122,.3);
+  --text-1:#3a2433; --text-2:#6b7280; --text-3:#b48ba0;
+  --success:#22b07d; --warn:#e2a13a; --danger:#e0567c;
+  --shadow:0 8px 28px rgba(236,64,122,.14);
+  --card-blur:0px;
+}
+/* الثيم المحايد — يُعرض فقط قبل تسجيل الدخول (شاشة إدخال رمز التفعيل) */
+[data-theme="neutral"]{
+  --bg-1:#fbfbfc; --bg-2:#f4f5f7; --bg-3:#eceef2;
+  --accent:#475569; --accent-2:#64748b; --accent-glow:rgba(100,116,139,.25);
+  --panel:rgba(255,255,255,.7); --panel-strong:rgba(255,255,255,.9);
+  --border:rgba(71,85,105,.14); --border-strong:rgba(71,85,105,.25);
+  --text-1:#1e2430; --text-2:#5b6472; --text-3:#8a93a3;
+  --success:#22a06b; --warn:#c98a1f; --danger:#d64545;
+  --shadow:0 8px 32px rgba(30,36,48,.08);
+  --card-blur:6px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:var(--font-body); font-size:15.5px; font-weight:500; line-height:1.65;
+  background:
+    radial-gradient(circle at 15% 0%, var(--bg-3), transparent 55%),
+    radial-gradient(circle at 90% 15%, var(--bg-2), transparent 45%),
+    var(--bg-1);
+  color:var(--text-1); min-height:100vh;
+  transition:background 700ms ease, color 700ms ease;
+  overflow-x:hidden;
+  position:relative;
+}
+body::before, body::after{
+  content:''; position:fixed; border-radius:50%; pointer-events:none; z-index:0;
+  background:var(--accent-glow); filter:blur(70px); opacity:.35;
+  transition:background 700ms ease;
+}
+body::before{ width:340px; height:340px; top:-90px; left:-90px; }
+body::after{ width:420px; height:420px; bottom:-120px; right:-100px; }
+.topbar, .stage{ position:relative; z-index:1; }
+.topbar{
+  display:grid; grid-template-columns:64px 1fr 64px; align-items:center;
+  padding:16px 20px; position:sticky; top:0; z-index:50;
+  background:var(--panel-strong); backdrop-filter:blur(calc(var(--card-blur) + 4px)); -webkit-backdrop-filter:blur(calc(var(--card-blur) + 4px));
+  border-bottom:1px solid var(--border);
+  transition:background 700ms ease, border-color 700ms ease;
+}
+.menu-btn{
+  width:42px; height:42px; border-radius:12px; border:1px solid var(--border);
+  background:var(--panel); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:19px; color:var(--text-1); transition:background .25s ease, transform .2s ease;
+}
+.menu-btn:hover{transform:translateY(-2px); background:var(--panel-strong);}
+.topbar .theme-toggle{ justify-self:start; }
+.brand{display:flex; align-items:center; gap:12px; justify-content:center; text-align:center;}
+.brand-mark{
+  width:38px; height:38px; border-radius:11px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:900; color:#fff; font-size:17px;
+  box-shadow:0 0 22px var(--accent-glow);
+  transition:box-shadow 700ms ease, background 700ms ease;
+}
+.brand-text{font-family:var(--font-display); font-weight:900; font-size:17px; letter-spacing:.3px;}
+.brand-text span{display:block; font-family:var(--font-body); font-weight:600; font-size:12px; color:var(--text-2);}
+
+/* ====== القائمة الجانبية (☰) ====== */
+.nav-overlay{
+  position:fixed; inset:0; background:rgba(10,15,25,.45); z-index:90;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.nav-overlay.open{opacity:1; pointer-events:auto;}
+.nav-drawer{
+  position:fixed; top:0; bottom:0; right:0; width:300px; max-width:85vw; z-index:91;
+  background:var(--panel-strong); backdrop-filter:blur(calc(var(--card-blur) + 6px));
+  border-left:1px solid var(--border); box-shadow:-10px 0 40px rgba(0,0,0,.15);
+  transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1);
+  padding:22px 18px; overflow-y:auto;
+}
+.nav-drawer.open{transform:translateX(0);}
+.nav-drawer-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
+.nav-drawer-title{font-family:var(--font-display); font-weight:900; font-size:16px;}
+.nav-close{background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-2);}
+.nav-section-label{font-size:11.5px; font-weight:800; color:var(--text-3); margin:18px 0 8px;}
+.nav-item{
+  display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;
+  font-weight:800; font-size:14.5px; cursor:pointer; margin-bottom:6px;
+  border:1px solid transparent; transition:background .2s ease, border-color .2s ease;
+}
+.nav-item:hover{background:var(--panel);}
+.nav-item.active{background:var(--panel); border-color:var(--border-strong); color:var(--accent);}
+.nav-item.soon{opacity:.55; cursor:default;}
+.nav-item .soon-badge{
+  margin-inline-start:auto; font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px;
+  background:var(--accent-glow); color:var(--accent);
+}
+
+/* زر تبديل النمط — رمزان فقط، بلا أي كتابة */
+.theme-toggle{
+  position:relative; width:64px; height:36px; border-radius:999px;
+  border:1px solid var(--border-strong); background:var(--panel-strong);
+  cursor:pointer; display:flex; align-items:center; padding:3px;
+  transition:background 700ms ease, border-color 700ms ease;
+  backdrop-filter:blur(10px);
+}
+.theme-toggle .knob{
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 16px var(--accent-glow);
+  transition:transform 550ms cubic-bezier(.65,-0.15,.2,1.3), background 700ms ease;
+  transform:translateX(0);
+  color:#fff; font-size:15px; font-weight:900; line-height:1;
+}
+[data-theme="female"] .theme-toggle .knob{ transform:translateX(-28px); }
+
+.stage{max-width:1180px; margin:0 auto; padding:32px 24px 90px;}
+
+.hidden{display:none !important;}
+
+/* ===== شاشة الدخول ===== */
+.login-wrap{max-width:430px; margin:8vh auto 0; text-align:center;}
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px; backdrop-filter:blur(var(--card-blur)); -webkit-backdrop-filter:blur(var(--card-blur));
+  box-shadow:var(--shadow);
+  transition:transform .35s ease, border-color .35s ease, background 700ms ease, box-shadow .35s ease;
+}
+.card.stat-card, .card.hoverable{cursor:default;}
+.card.stat-card:hover, .card.hoverable:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 44px var(--accent-glow);
+  border-color:var(--border-strong);
+}
+.login-card{padding:40px 30px;}
+.login-icon{
+  width:66px; height:66px; border-radius:50%; margin:0 auto 18px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 26px var(--accent-glow); font-size:28px;
+}
+.login-title{font-family:var(--font-display); font-weight:900; font-size:21px; margin-bottom:6px;}
+.login-sub{color:var(--text-3); font-size:13.5px; margin-bottom:24px; line-height:1.8;}
+.code-input{
+  width:100%; padding:15px 16px; border-radius:13px;
+  background:var(--panel-strong); border:1px solid var(--border-strong);
+  color:var(--text-1); font-size:17px; letter-spacing:3px; text-align:center;
+  font-family:monospace; margin-bottom:14px; outline:none; text-transform:uppercase;
+  transition:border-color .3s ease, box-shadow .3s ease;
+}
+.code-input:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-glow);}
+.btn-primary{
+  border:none; padding:13px 22px; border-radius:12px; width:100%;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  color:#fff; font-weight:800; font-size:14.5px; cursor:pointer; font-family:var(--font-body);
+  box-shadow:0 0 20px var(--accent-glow);
+  transition:transform .3s ease, box-shadow .3s ease, opacity .2s ease;
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 6px 28px var(--accent-glow);}
+.btn-primary:active{transform:scale(.96);}
+.btn-primary:disabled{opacity:.6; cursor:not-allowed; transform:none;}
+.login-error{
+  margin-top:14px; padding:10px 14px; border-radius:10px; font-size:12.5px;
+  background:rgba(248,113,113,.14); color:var(--danger); border:1px solid rgba(248,113,113,.3);
+}
+.login-hint{margin-top:22px; font-size:12px; color:var(--text-3); line-height:1.8;}
+
+/* ===== ترحيب وتشجيع ===== */
+.welcome-band{
+  border-radius:var(--radius); padding:26px 28px; margin-bottom:22px;
+  background:linear-gradient(120deg, var(--panel-strong), var(--panel));
+  border:1px solid var(--border); position:relative; overflow:hidden;
+}
+.welcome-band::after{
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 90% 0%, var(--accent-glow), transparent 60%);
+  opacity:.5; pointer-events:none;
+}
+.welcome-title{font-family:var(--font-display); font-weight:900; font-size:22px; margin-bottom:6px; position:relative;}
+.welcome-title span{color:var(--accent-2);}
+.welcome-sub{color:var(--text-2); font-size:13.5px; position:relative; line-height:1.8;}
+.streak-row{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:18px; position:relative;
+}
+.streak-chip{
+  display:flex; flex-direction:column; align-items:flex-start; gap:4px;
+  padding:16px 18px; border-radius:14px;
+  background:var(--panel-strong); border:1px solid var(--border-strong);
+  backdrop-filter:blur(var(--card-blur)); -webkit-backdrop-filter:blur(var(--card-blur));
+  box-shadow:var(--shadow);
+  transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.streak-chip:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px var(--accent-glow);
+  border-color:var(--border-strong);
+}
+.streak-chip .chip-label{font-size:11.5px; font-weight:700; color:var(--text-3);}
+[data-theme="male"] .welcome-title, [data-theme="male"] .login-title, [data-theme="male"] .streak-chip b, [data-theme="male"] .lesson-title{
+  text-shadow:0 1px 2px rgba(255,255,255,.6);
+}
+.streak-chip b{font-family:var(--font-display); font-size:26px; font-weight:900; color:var(--accent);}
+@media (max-width:640px){ .streak-row{grid-template-columns:1fr;} }
+.progress-track{
+  margin-top:16px; height:9px; border-radius:999px; background:var(--panel-strong);
+  border:1px solid var(--border); overflow:hidden; position:relative;
+}
+.progress-fill{
+  height:100%; border-radius:999px;
+  background:linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition:width .6s ease; box-shadow:0 0 10px var(--accent-glow);
+}
+.progress-label{font-size:11.5px; color:var(--text-3); margin-top:8px; position:relative;}
+
+/* ===== فلاتر ===== */
+.filter-group{margin-bottom:14px;}
+.filter-group-label{font-size:11.5px; font-weight:700; color:var(--text-3); margin-bottom:8px;}
+.filter-row{display:flex; gap:8px; flex-wrap:wrap;}
+.chip{
+  padding:8px 16px; border-radius:999px; font-size:12.5px; font-weight:700;
+  background:var(--panel); border:1px solid var(--border); color:var(--text-2);
+  cursor:pointer; transition:all .3s ease;
+}
+.chip.active{
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  color:#fff; border-color:transparent; box-shadow:0 0 14px var(--accent-glow);
+}
+.filters-block{margin-bottom:24px;}
+.active-filter-label{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:12px;
+  background:var(--panel); border:1px solid var(--border); font-weight:800; font-size:14px; color:var(--text-1);
+}
+
+/* ===== شبكة الدروس ===== */
+.grid{display:grid; gap:16px;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.empty-state{
+  text-align:center; padding:50px 20px; color:var(--text-3); font-size:13.5px;
+}
+.lesson-card{padding:0; overflow:hidden; cursor:pointer; position:relative;}
+.lesson-card:hover{transform:translateY(-4px); border-color:var(--border-strong); box-shadow:0 14px 40px var(--accent-glow);}
+.lesson-thumb{
+  height:112px; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  color:#fff; font-family:var(--font-display); font-weight:900; font-size:14px; gap:8px;
+}
+.lesson-thumb.done{background:linear-gradient(135deg, var(--success), #10b981);}
+.lesson-body{padding:16px;}
+.lesson-title{font-weight:800; font-size:14.5px; margin-bottom:8px; line-height:1.5;}
+.tag-row{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+.tag{
+  font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px;
+  background:var(--panel-strong); border:1px solid var(--border); color:var(--text-2);
+}
+.tag.done{color:var(--success); border-color:rgba(52,211,153,.4);}
+.lesson-meta{display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-3);}
+.audio-badge{
+  position:absolute; top:10px; left:10px; background:rgba(0,0,0,.45); color:#fff;
+  font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:999px; display:flex; gap:4px; align-items:center;
+}
+
+/* ===== نافذة الدرس ===== */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(6,11,26,.72); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center; z-index:200; padding:20px;
+}
+[data-theme="female"] .modal-overlay{background:rgba(80,30,55,.35);}
+.modal-box{
+  width:100%; max-width:640px; max-height:88vh; overflow-y:auto;
+  border-radius:20px; padding:26px; background:var(--bg-1);
+  border:1px solid var(--border-strong); box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.modal-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:10px;}
+.modal-title{font-family:var(--font-display); font-weight:900; font-size:18px; line-height:1.5;}
+.modal-close{
+  border:none; background:var(--panel-strong); color:var(--text-2); width:32px; height:32px;
+  border-radius:50%; cursor:pointer; font-size:16px; flex-shrink:0;
+}
+.media-box{width:100%; border-radius:14px; overflow:hidden; margin-bottom:16px; background:#000; position:relative;}
+.media-box video, .media-box img{width:100%; display:block; max-height:400px; object-fit:contain; user-select:none; -webkit-user-drag:none;}
+.media-box iframe{width:100%; height:420px; border:none;}
+/* علامة مائية خفيفة باسم التلميذ — لا تمنع لقطة الشاشة، لكنها تجعل أي نسخة مسرَّبة قابلة للتتبع */
+.media-box.watermarked::after{
+  content:attr(data-wm); position:absolute; bottom:10px; left:14px; z-index:5;
+  color:rgba(255,255,255,.55); font-size:11px; font-weight:700;
+  text-shadow:0 1px 3px rgba(0,0,0,.6); pointer-events:none; letter-spacing:.3px;
+}
+.audio-block{
+  margin-top:12px; padding:14px; border-radius:14px; background:var(--panel-strong); border:1px solid var(--border);
+}
+.audio-block-label{font-size:12px; font-weight:700; color:var(--text-2); margin-bottom:8px; display:flex; gap:6px; align-items:center;}
+audio{width:100%;}
+.live-join{
+  display:block; text-align:center; padding:14px; border-radius:12px; margin-top:10px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; font-weight:800;
+  text-decoration:none;
+}
+.done-banner{
+  margin-top:16px; padding:12px 14px; border-radius:12px; background:rgba(52,211,153,.14);
+  color:var(--success); font-size:12.5px; font-weight:700; text-align:center;
+}
+
+/* ====== فلاش كارد ====== */
+.fc-progress{font-size:12.5px; font-weight:700; color:var(--text-3); margin-bottom:14px;}
+.fc-question{
+  font-family:var(--font-display); font-weight:900; font-size:20px; text-align:center;
+  padding:26px 20px; margin-bottom:22px;
+}
+.fc-options{display:grid; gap:12px; max-width:480px; margin:0 auto;}
+.fc-option{
+  padding:16px 20px; border-radius:14px; border:2px solid var(--border); background:var(--panel);
+  font-weight:800; font-size:15px; text-align:center; cursor:pointer;
+  transition:transform .2s ease, border-color .2s ease, background .2s ease;
+}
+.fc-option:hover{transform:translateY(-2px);}
+.fc-option.correct{background:rgba(34,176,125,.18); border-color:var(--success); color:var(--success);}
+.fc-option.wrong{background:rgba(224,86,124,.18); border-color:var(--danger); color:var(--danger);}
+.fc-option.disabled{cursor:default; transform:none;}
+.fc-next-btn{display:block; margin:24px auto 0;}
+.fc-empty{text-align:center; padding:40px 20px; color:var(--text-2); font-weight:700;}
+
+.quote-box{
+  margin-top:30px; padding:16px 20px; border-radius:14px;
+  background:var(--panel); border:1px dashed var(--border-strong);
+  font-size:12.5px; color:var(--text-2); line-height:1.9; text-align:center;
+}
+
+@media (max-width: 860px){
+  .grid-3{grid-template-columns:repeat(2,1fr);}
+  .topbar{flex-wrap:wrap; gap:12px;}
+}
+@media (max-width: 560px){
+  .grid-3{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body data-theme="neutral">
+
+<div class="topbar">
+  <button class="menu-btn" id="navMenuBtn" onclick="openNav()" aria-label="القائمة">☰</button>
+  <div class="brand">
+    <div class="brand-mark">CA</div>
+    <div class="brand-text">CHAIMA ONLINE ACADEMY
+      <span>منصة تعلّم اللغة الإنجليزية</span>
+    </div>
+  </div>
+  <button class="theme-toggle hidden" id="themeToggle" onclick="toggleTheme()" aria-label="تبديل النمط">
+    <div class="knob" id="knob">♂</div>
+  </button>
+</div>
+
+<!-- ====== القائمة الجانبية ====== -->
+<div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-head">
+    <div class="nav-drawer-title">☰ الأقسام</div>
+    <button class="nav-close" onclick="closeNav()">✕</button>
+  </div>
+
+  <div class="nav-section-label">المهارة</div>
+  <div class="nav-item active" data-skill="">📚 كل الدروس</div>
+  <div class="nav-item" data-skill="GRAMMAR">📖 القواعد</div>
+  <div class="nav-item" data-skill="SPEAKING">🗣️ محادثة</div>
+  <div class="nav-item" data-skill="LISTENING">🎧 استماع</div>
+
+  <div class="nav-section-label">أقسام قادمة قريبًا</div>
+  <div class="nav-section-label">الأقسام</div>
+  <div class="nav-item" data-type="EXERCISE">🧩 التطبيقات والتمارين</div>
+  <div class="nav-item" data-type="TOPIC">📝 المواضيع والحل النموذجي (بكالوريا)</div>
+  <div class="nav-item" data-type="LIVE">🔴 البثوث المباشرة</div>
+  <div class="nav-item" data-type="VIDEO">🎬 الفيديوهات المسجلة</div>
+  <div class="nav-item" id="navFlashcards" onclick="openFlashcardsView()">🃏 فلاش كارد</div>
+</div>
+
+<div class="stage">
+
+  <!-- ============ تسجيل الدخول ============ -->
+  <div id="view-login" class="login-wrap">
+    <div class="card login-card">
+      <div class="login-icon">🔑</div>
+      <div class="login-title">أهلًا بك في أكاديمية شيماء</div>
+      <div class="login-sub">أدخلي/أدخل رمز التفعيل الخاص بك للمتابعة إلى دروسك</div>
+      <input class="code-input" id="codeInput" placeholder="CH-XXXX-XX" maxlength="10" autocomplete="off">
+      <button class="btn-primary" id="loginBtn" onclick="studentLogin()">دخول</button>
+      <div id="loginError" class="login-error hidden"></div>
+    </div>
+    <div class="login-hint">الرمز يُستخدم على جهاز واحد فقط. إن غيّرت جهازك، تواصل مع أستاذتك لإعادة تفعيله.</div>
+  </div>
+
+  <!-- ============ مكتبة التلميذ ============ -->
+  <div id="view-library" class="hidden">
+
+    <div class="welcome-band">
+      <div class="welcome-title">أهلًا <span id="studentName">بك</span> 👋</div>
+      <div class="welcome-sub" id="motivationLine">كل درس تُنهينه اليوم خطوة أقرب لإتقان الإنجليزية. لنكمل معًا!</div>
+      <div class="streak-row">
+        <div class="streak-chip"><span class="chip-label">🔥 أيام متتالية</span><b id="streakCount">0</b></div>
+        <div class="streak-chip"><span class="chip-label">✅ دروس أنجزتها</span><b id="doneCount">0</b></div>
+        <div class="streak-chip"><span class="chip-label">📚 دروس متاحة</span><b id="totalCount">0</b></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">ابدئي أول درس لتظهر نسبة تقدّمك هنا</div>
+    </div>
+
+    <div class="filters-block">
+      <div class="active-filter-label" id="activeFilterLabel">📚 عرض: كل الدروس</div>
+      <div class="filter-row hidden" id="exerciseLevelRow" style="margin-top:12px;">
+        <div class="chip active" data-lvl="">كل المستويات</div>
+        <div class="chip" data-lvl="BEGINNER">مبتدئ</div>
+        <div class="chip" data-lvl="INTERMEDIATE">متوسط</div>
+        <div class="chip" data-lvl="ADVANCED">متقدم</div>
+      </div>
+    </div>
+
+    <div class="grid grid-3" id="lessonGrid"></div>
+    <div id="emptyState" class="empty-state hidden"></div>
+
+    <div class="quote-box" id="quoteBox">💡 نصيحة اليوم: خصّصي 15 دقيقة يوميًا أفضل من ساعة مرة واحدة في الأسبوع.</div>
+  </div>
+
+  <!-- ============ فلاش كارد ============ -->
+  <div id="view-flashcards" class="hidden">
+    <div class="active-filter-label" style="cursor:pointer;" onclick="closeFlashcardsView()">⟵ رجوع للدروس</div>
+    <div id="fcPlayArea" style="margin-top:20px;"></div>
+  </div>
+
+</div>
+
+<!-- نافذة عرض الدرس -->
+<div id="lessonModal" class="modal-overlay hidden" onclick="if(event.target===this) closeLesson()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeLesson()">✕</button>
+    </div>
+    <div id="modalMedia"></div>
+    <div id="modalAudioBlock"></div>
+    <div id="modalDone" class="done-banner hidden">🎉 أحسنت! تم تسجيل هذا الدرس ضمن إنجازاتك.</div>
+  </div>
+</div>
+
+<script>
+/* ====== الإعداد: يُستبدل بمتغيرات النشر الفعلية ====== */
+const CONFIG = {
+  apiBase: (window.CHAIMA_CONFIG && window.CHAIMA_CONFIG.apiBase) || `http://${window.location.hostname}:4000/api`
+};
+
+/* ====== المشغّل السري للوصول إلى لوحة التحكم ====== */
+const ADMIN_KEY = "chaima_admin_fhoa1";
+function checkSecretHash(){
+  const h = window.location.hash.replace('#','');
+  if (h === ADMIN_KEY) {
+    window.location.replace('./teacher.html');
+  }
+}
+checkSecretHash();
+window.addEventListener('hashchange', checkSecretHash);
+
+/* ====== النمط ====== */
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  document.getElementById('knob').textContent = theme === 'female' ? '♀' : '♂';
+}
+function toggleTheme(){
+  const current = document.body.getAttribute('data-theme');
+  applyTheme(current === 'female' ? 'male' : 'female');
+}
+// قبل تسجيل الدخول: الصفحة محايدة (بيضاء) دائمًا، بغض النظر عن أي تفضيل سابق
+applyTheme('neutral');
+
+/* ====== مخاطبة حسب الجنس ====== */
+// g(male, female) — تُرجع الصيغة المناسبة حسب جنس التلميذ الحالي، والمذكر افتراضيًا قبل تسجيل الدخول
+function g(male, female){
+  return (session && session.student && session.student.gender === 'FEMALE') ? female : male;
+}
+
+/* ====== معرّف الجهاز ====== */
+function getDeviceId(){
+  let id = localStorage.getItem('chaima_device_id');
+  if(!id){
+    id = (crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Math.random().toString(36).slice(2)) ;
+    localStorage.setItem('chaima_device_id', id);
+  }
+  return id;
+}
+
+/* ====== حالة الجلسة ====== */
+let session = null; // { accessToken, student }
+let lessons = [];
+let activeSkill = '';
+let activeLevel = '';
+let viewStart = null;
+let currentLessonId = null;
+
+async function apiFetch(path, options = {}){
+  options.headers = Object.assign({}, options.headers, session ? { Authorization: 'Bearer ' + session.accessToken } : {});
+  let res = await fetch(CONFIG.apiBase + path, Object.assign({ credentials: 'include' }, options));
+  if (res.status === 401 && session) {
+    // محاولة تجديد الجلسة عبر الكوكي
+    const r = await fetch(CONFIG.apiBase + '/auth/refresh', { method: 'POST', credentials: 'include' });
+    if (r.ok) {
+      const data = await r.json();
+      session.accessToken = data.accessToken;
+      options.headers.Authorization = 'Bearer ' + session.accessToken;
+      res = await fetch(CONFIG.apiBase + path, Object.assign({ credentials: 'include' }, options));
+    }
+  }
+  return res;
+}
+
+async function studentLogin(){
+  const codeInput = document.getElementById('codeInput');
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  const code = codeInput.value.trim().toUpperCase();
+  err.classList.add('hidden');
+  if (!code) return;
+  btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+  try {
+    const res = await fetch(CONFIG.apiBase + '/auth/student/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, deviceId: getDeviceId() })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'تعذّر تسجيل الدخول');
+    session = { accessToken: data.accessToken, student: data.student };
+    applyTheme(data.student.gender === 'FEMALE' ? 'female' : 'male');
+    document.getElementById('themeToggle').classList.remove('hidden');
+    document.getElementById('studentName').textContent = data.student.name;
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-library').classList.remove('hidden');
+    setMotivation();
+    setDailyTip();
+    await loadLessons();
+    updateStreak();
+  } catch(e){
+    err.textContent = e.message;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'دخول';
+  }
+}
+document.getElementById('codeInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') studentLogin(); });
+
+/* ====== رسائل تحفيزية ====== */
+const MOTIVATIONS_M = [
+  "كل درس تُنهيه اليوم خطوة أقرب لإتقان الإنجليزية. لنكمل معًا!",
+  "الاستمرار أهم من الكمال — درس قصير كل يوم يصنع فرقًا كبيرًا.",
+  "أنتَ أقرب لهدفك مما تظن. واصل 💪",
+  "لا بأس لو أخطأتَ، المهم أنك تتقدّم خطوة بخطوة.",
+  "افتح درسًا جديدًا الآن، مستقبلك يشكرك على ذلك."
+];
+const MOTIVATIONS_F = [
+  "كل درس تُنهينه اليوم خطوة أقرب لإتقان الإنجليزية. لنكمل معًا!",
+  "الاستمرار أهم من الكمال — درس قصير كل يوم يصنع فرقًا كبيرًا.",
+  "أنتِ أقرب لهدفك مما تظنين. واصلي 💪",
+  "لا بأس لو أخطأتِ، المهم أنك تتقدّمين خطوة بخطوة.",
+  "افتحي درسًا جديدًا الآن، مستقبلك يشكرك على ذلك."
+];
+function setMotivation(){
+  const list = g(MOTIVATIONS_M, MOTIVATIONS_F);
+  document.getElementById('motivationLine').textContent = list[Math.floor(Math.random()*list.length)];
+}
+const TIPS_M = [
+  "💡 نصيحة اليوم: خصّص 15 دقيقة يوميًا أفضل من ساعة مرة واحدة في الأسبوع.",
+  "💡 كرّر الاستماع لنفس الدرس مرتين، المرة الثانية تكشف تفاصيل جديدة.",
+  "💡 دوّن 3 كلمات جديدة من كل درس وحاول استعمالها في جملة.",
+  "💡 لا تنتظر الكمال لتتحدّث — التحدث بثقة أهم من الدقة في البداية."
+];
+const TIPS_F = [
+  "💡 نصيحة اليوم: خصّصي 15 دقيقة يوميًا أفضل من ساعة مرة واحدة في الأسبوع.",
+  "💡 كرّري الاستماع لنفس الدرس مرتين، المرة الثانية تكشف تفاصيل جديدة.",
+  "💡 دوّني 3 كلمات جديدة من كل درس وحاولي استعمالها في جملة.",
+  "💡 لا تنتظري الكمال لتتحدّثي — التحدث بثقة أهم من الدقة في البداية."
+];
+function setDailyTip(){
+  const list = g(TIPS_M, TIPS_F);
+  document.getElementById('quoteBox').textContent = list[Math.floor(Math.random()*list.length)];
+}
+
+/* ====== التتابع اليومي (يُحسب محليًا من تواريخ الدخول) ====== */
+function updateStreak(){
+  const key = 'chaima_login_days_' + (session?.student?.id || 'anon');
+  const today = new Date().toISOString().slice(0,10);
+  let days = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!days.includes(today)) days.push(today);
+  days = days.slice(-60);
+  localStorage.setItem(key, JSON.stringify(days));
+
+  // نحسب أيامًا متتالية بانتهاء عند أول فجوة
+  let streak = 0;
+  let cursor = new Date();
+  for(;;){
+    const iso = cursor.toISOString().slice(0,10);
+    if (days.includes(iso)) { streak++; cursor.setDate(cursor.getDate()-1); }
+    else break;
+  }
+  document.getElementById('streakCount').textContent = streak;
+}
+
+function getViewedIds(){
+  const key = 'chaima_viewed_' + (session?.student?.id || 'anon');
+  return new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+}
+function markViewed(lessonId){
+  const key = 'chaima_viewed_' + (session?.student?.id || 'anon');
+  const set = getViewedIds();
+  set.add(lessonId);
+  localStorage.setItem(key, JSON.stringify([...set]));
+  renderProgress();
+}
+function renderProgress(){
+  const viewed = getViewedIds();
+  const done = lessons.filter(l => viewed.has(l.id)).length;
+  const total = lessons.length;
+  document.getElementById('doneCount').textContent = done;
+  document.getElementById('totalCount').textContent = total;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent =
+    total === 0 ? 'لا توجد دروس متاحة بعد' :
+    done === 0 ? g('ابدأ أول درس لتظهر نسبة تقدّمك هنا', 'ابدئي أول درس لتظهر نسبة تقدّمك هنا') :
+    `أنجزت ${pct}% من الدروس المتاحة حاليًا — ` + g('استمر!', 'استمري!');
+}
+
+/* ====== تحميل الدروس ====== */
+let activeType = '';
+async function loadLessons(){
+  const params = new URLSearchParams();
+  if (activeSkill) params.set('skill', activeSkill);
+  if (activeType) params.set('type', activeType);
+  if (activeType === 'EXERCISE' && activeLevel) params.set('level', activeLevel);
+  const res = await apiFetch('/lessons?' + params.toString());
+  lessons = res.ok ? await res.json() : [];
+  renderLessons();
+  renderProgress();
+}
+
+const SKILL_LABEL = { GRAMMAR:'قواعد', SPEAKING:'محادثة', LISTENING:'استماع' };
+const LEVEL_LABEL = { BEGINNER:'مبتدئ', INTERMEDIATE:'متوسط', ADVANCED:'متقدم' };
+const TYPE_ICON = { VIDEO:'🎥 فيديو', FILE:'📄 ملف', AUDIO:'🎧 صوت', LIVE:'📡 بث مباشر', EXERCISE:'🧩 تمرين', TOPIC:'📝 موضوع وحل نموذجي' };
+
+function fileAbsUrl(u){
+  if(!u) return '';
+  if (u.startsWith('http')) return u;
+  // كل الوسائط المرفوعة محمية الآن، تمر عبر /api/media وتتطلب رمز دخول صالح في الرابط
+  const protectedPath = u.replace(/^\/uploads\//, '/api/media/');
+  const tokenParam = session?.accessToken ? `?token=${encodeURIComponent(session.accessToken)}` : '';
+  return CONFIG.apiBase.replace(/\/api$/,'') + protectedPath + tokenParam;
+}
+
+function renderLessons(){
+  const grid = document.getElementById('lessonGrid');
+  const empty = document.getElementById('emptyState');
+  const viewed = getViewedIds();
+  grid.innerHTML = '';
+  if (!lessons.length){
+    empty.textContent = g('لا توجد دروس مطابقة لهذا الفلتر بعد. جرّب فلترًا آخر 🙂', 'لا توجد دروس مطابقة لهذا الفلتر بعد. جرّبي فلترًا آخر 🙂');
+    empty.classList.remove('hidden'); return;
+  }
+  empty.classList.add('hidden');
+  lessons.forEach(l => {
+    const isDone = viewed.has(l.id);
+    const card = document.createElement('div');
+    card.className = 'card lesson-card';
+    card.onclick = () => openLesson(l);
+    card.innerHTML = `
+      ${l.audioUrl ? '<div class="audio-badge">🎧 صوت إضافي</div>' : ''}
+      <div class="lesson-thumb ${isDone?'done':''}">${isDone ? '✅ أُنجز' : TYPE_ICON[l.type] || l.type}</div>
+      <div class="lesson-body">
+        <div class="lesson-title">${escapeHtml(l.title)}</div>
+        <div class="tag-row">
+          <span class="tag">${SKILL_LABEL[l.skill]||l.skill}</span>
+          <span class="tag">${LEVEL_LABEL[l.level]||l.level}</span>
+          ${isDone ? '<span class="tag done">مكتمل</span>' : ''}
+        </div>
+        <div class="lesson-meta"><span>${new Date(l.createdAt).toLocaleDateString('ar')}</span><span>فتح الدرس ←</span></div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML;
+}
+
+/* ====== القائمة الجانبية ====== */
+function openNav(){
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navOverlay').classList.add('open');
+}
+function closeNav(){
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('open');
+}
+const SKILL_NAV_LABEL = { '':'📚 كل الدروس', GRAMMAR:'📖 القواعد', SPEAKING:'🗣️ محادثة', LISTENING:'🎧 استماع' };
+const TYPE_NAV_LABEL = { EXERCISE:'🧩 التطبيقات والتمارين', TOPIC:'📝 المواضيع والحل النموذجي', LIVE:'🔴 البثوث المباشرة', VIDEO:'🎬 الفيديوهات المسجلة' };
+
+function updateActiveFilterLabel(){
+  const label = activeType ? TYPE_NAV_LABEL[activeType] : SKILL_NAV_LABEL[activeSkill];
+  document.getElementById('activeFilterLabel').textContent = 'عرض: ' + label;
+  document.getElementById('exerciseLevelRow').classList.toggle('hidden', activeType !== 'EXERCISE');
+}
+
+document.querySelectorAll('.nav-item[data-skill]').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    closeFlashcardsView(true);
+    document.querySelectorAll('.nav-item[data-skill], .nav-item[data-type]').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    activeSkill = item.dataset.skill;
+    activeType = ''; // "كل الدروس" أو فلتر مهارة يلغي فلتر القسم
+    activeLevel = '';
+    updateActiveFilterLabel();
+    loadLessons();
+    closeNav();
+  });
+});
+
+document.querySelectorAll('.nav-item[data-type]').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    closeFlashcardsView(true);
+    document.querySelectorAll('.nav-item[data-skill], .nav-item[data-type]').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    activeType = item.dataset.type;
+    activeSkill = '';
+    activeLevel = '';
+    document.querySelectorAll('#exerciseLevelRow .chip').forEach(c=>c.classList.toggle('active', c.dataset.lvl===''));
+    updateActiveFilterLabel();
+    loadLessons();
+    closeNav();
+  });
+});
+
+document.getElementById('exerciseLevelRow').addEventListener('click', (e)=>{
+  if (!e.target.classList.contains('chip')) return;
+  document.querySelectorAll('#exerciseLevelRow .chip').forEach(c=>c.classList.remove('active'));
+  e.target.classList.add('active');
+  activeLevel = e.target.dataset.lvl;
+  loadLessons();
+});
+
+/* ====== فلاش كارد ====== */
+let fcCards = [];
+let fcIndex = 0;
+
+async function openFlashcardsView(){
+  closeNav();
+  document.getElementById('view-library').classList.add('hidden');
+  document.getElementById('view-flashcards').classList.remove('hidden');
+  document.querySelectorAll('.nav-item[data-skill], .nav-item[data-type]').forEach(i=>i.classList.remove('active'));
+  document.getElementById('navFlashcards').classList.add('active');
+
+  const res = await apiFetch('/flashcards');
+  fcCards = res.ok ? await res.json() : [];
+  fcIndex = 0;
+  renderFlashcard();
+}
+function closeFlashcardsView(silent){
+  document.getElementById('view-flashcards').classList.add('hidden');
+  if (!silent) document.getElementById('view-library').classList.remove('hidden');
+  document.getElementById('navFlashcards').classList.remove('active');
+}
+
+function renderFlashcard(){
+  const area = document.getElementById('fcPlayArea');
+  if (!fcCards.length){
+    area.innerHTML = `<div class="fc-empty">${g('لا توجد بطاقات فلاش كارد بعد. عودة قريبًا 🙂', 'لا توجد بطاقات فلاش كارد بعد. عودي قريبًا 🙂')}</div>`;
+    return;
+  }
+  if (fcIndex >= fcCards.length){
+    area.innerHTML = `<div class="fc-empty">🎉 ${g('أنهيت كل البطاقات المتاحة!', 'أنهيتِ كل البطاقات المتاحة!')}</div>
+      <button class="btn-primary fc-next-btn" onclick="fcIndex=0; renderFlashcard();">إعادة من البداية</button>`;
+    return;
+  }
+  const c = fcCards[fcIndex];
+  const options = [c.optionA, c.optionB, c.optionC];
+  area.innerHTML = `
+    <div class="fc-progress">بطاقة ${fcIndex+1} من ${fcCards.length}</div>
+    <div class="card fc-question">${escapeHtml(c.question)}</div>
+    <div class="fc-options">
+      ${options.map((opt,i)=>`<div class="fc-option" data-i="${i}" onclick="answerFlashcard(${i})">${escapeHtml(opt)}</div>`).join('')}
+    </div>
+  `;
+}
+
+function answerFlashcard(chosenIndex){
+  const c = fcCards[fcIndex];
+  document.querySelectorAll('.fc-option').forEach(el=>{
+    el.classList.add('disabled');
+    el.onclick = null;
+    const i = Number(el.dataset.i);
+    if (i === c.correctIndex) el.classList.add('correct');
+    else if (i === chosenIndex) el.classList.add('wrong');
+  });
+  const btn = document.createElement('button');
+  btn.className = 'btn-primary fc-next-btn';
+  btn.textContent = 'البطاقة التالية ←';
+  btn.onclick = () => { fcIndex++; renderFlashcard(); };
+  document.getElementById('fcPlayArea').appendChild(btn);
+}
+
+/* ====== نافذة الدرس ====== */
+function openLesson(l){
+  currentLessonId = l.id;
+  viewStart = Date.now();
+  document.getElementById('modalTitle').textContent = l.title;
+  document.getElementById('modalDone').classList.add('hidden');
+
+  const mediaEl = document.getElementById('modalMedia');
+  mediaEl.innerHTML = '';
+  const studentTag = session?.student?.name ? escapeHtml(session.student.name) : '';
+  const guardAttrs = `oncontextmenu="return false" controlsList="nodownload noremoteplayback" disablePictureInPicture`;
+  if (l.type === 'VIDEO' && l.fileUrl){
+    mediaEl.innerHTML = `<div class="media-box watermarked" data-wm="${studentTag}">
+      <video src="${fileAbsUrl(l.fileUrl)}" controls ${guardAttrs}></video>
+    </div>`;
+  } else if (l.type === 'AUDIO' && l.fileUrl){
+    mediaEl.innerHTML = `<div class="audio-block"><div class="audio-block-label">🎧 التسجيل الصوتي</div><audio src="${fileAbsUrl(l.fileUrl)}" controls controlsList="nodownload" oncontextmenu="return false"></audio></div>`;
+  } else if (l.type === 'FILE' && l.fileUrl){
+    const isImg = /\.(png|jpe?g|webp)$/i.test(l.fileUrl);
+    mediaEl.innerHTML = isImg
+      ? `<div class="media-box watermarked" data-wm="${studentTag}" oncontextmenu="return false"><img src="${fileAbsUrl(l.fileUrl)}" draggable="false"></div>`
+      : `<div class="media-box watermarked" data-wm="${studentTag}"><iframe src="${fileAbsUrl(l.fileUrl)}#toolbar=0"></iframe></div>`;
+  } else if (l.type === 'LIVE'){
+    const joinUrl = l.liveSession?.joinUrl;
+    mediaEl.innerHTML = joinUrl
+      ? `<a class="live-join" href="${joinUrl}" target="_blank" rel="noopener">📡 الانضمام إلى البث المباشر</a>`
+      : `<div class="empty-state">${g('سيبدأ البث قريبًا، تابع الإشعارات.', 'سيبدأ البث قريبًا، تابعي الإشعارات.')}</div>`;
+  } else {
+    mediaEl.innerHTML = `<div class="empty-state">لا يوجد ملف مرفق لهذا الدرس بعد.</div>`;
+  }
+
+  const audioBlockEl = document.getElementById('modalAudioBlock');
+  audioBlockEl.innerHTML = (l.audioUrl && l.type !== 'AUDIO')
+    ? `<div class="audio-block"><div class="audio-block-label">🎧 تسجيل صوتي إضافي من الأستاذة</div><audio src="${fileAbsUrl(l.audioUrl)}" controls></audio></div>`
+    : '';
+
+  document.getElementById('lessonModal').classList.remove('hidden');
+}
+
+async function closeLesson(){
+  document.getElementById('lessonModal').classList.add('hidden');
+  if (currentLessonId && viewStart){
+    const seconds = Math.max(1, Math.round((Date.now()-viewStart)/1000));
+    try {
+      await apiFetch(`/lessons/${currentLessonId}/view`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ watchedSeconds: seconds })
+      });
+    } catch(e) { /* تسجيل المشاهدة غير حرج لتجربة المستخدم */ }
+    markViewed(currentLessonId);
+    renderLessons();
+  }
+  currentLessonId = null; viewStart = null;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+// ============================================================
+// CHAIMA ONLINE ACADEMY — Database Schema
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum Skill {
+  GRAMMAR // قواعد
+  SPEAKING // محادثة
+  LISTENING // استماع
+}
+
+enum Level {
+  BEGINNER // مبتدئ
+  INTERMEDIATE // متوسط
+  ADVANCED // متقدم
+}
+
+enum LessonType {
+  VIDEO
+  LIVE
+  FILE // PDF / صور
+  AUDIO // تسجيل صوتي كعنصر رئيسي
+  EXERCISE // تمرين تطبيقي مرتبط بمستوى صعوبة
+  TOPIC // موضوع وحل نموذجي (بكالوريا)
+}
+
+enum ActivationStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum UserRole {
+  TEACHER
+  STUDENT
+}
+
+enum Gender {
+  MALE // ذكر
+  FEMALE // أنثى
+}
+
+enum LiveSessionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+// ------------------------------------------------------------
+// TEACHER
+// ------------------------------------------------------------
+
+model Teacher {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  students   Student[]
+  lessons    Lesson[]
+  sessions   Session[]
+  flashcards Flashcard[]
+
+  @@map("teachers")
+}
+
+// ------------------------------------------------------------
+// STUDENT + ACTIVATION CODE
+// ------------------------------------------------------------
+
+model Student {
+  id        String   @id @default(uuid())
+  name      String
+  gender    Gender   @default(MALE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdById String
+  createdBy   Teacher @relation(fields: [createdById], references: [id])
+
+  activationCode ActivationCode?
+  sessions       Session[]
+  activityLogs   ActivityLog[]
+
+  @@map("students")
+}
+
+model ActivationCode {
+  id     String            @id @default(uuid())
+  // نخزّن hash فقط، لا الرمز الصريح، بحث ثابت عبر فهرس فريد
+  codeHash String          @unique
+  // آخر 4 خانات صريحة فقط، لغرض العرض في لوحة الأستاذ (CH-****-9A)
+  codeSuffix String
+  status ActivationStatus  @default(ACTIVE)
+
+  studentId String  @unique
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // الجهاز الوحيد المسموح له حاليًا باستخدام هذا الرمز
+  boundDeviceId String?
+  boundAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loginAttempts LoginAttempt[]
+
+  @@map("activation_codes")
+}
+
+// سجل كل محاولة استخدام للرمز — أساسي لكشف مشاركة الرمز بين عدة أجهزة
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  activationCodeId String
+  activationCode   ActivationCode @relation(fields: [activationCodeId], references: [id], onDelete: Cascade)
+
+  deviceId  String
+  ipAddress String?
+  userAgent String?
+  success   Boolean
+  reason    String? // "OK" | "DEVICE_MISMATCH" | "DISABLED" | "NOT_FOUND"
+
+  @@index([activationCodeId, createdAt])
+  @@map("login_attempts")
+}
+
+// ------------------------------------------------------------
+// SESSIONS (refresh tokens) — لطالب أو أستاذ
+// ------------------------------------------------------------
+
+model Session {
+  id        String   @id @default(uuid())
+  role      UserRole
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+
+  refreshTokenHash String @unique
+  deviceId         String?
+  userAgent        String?
+  ipAddress        String?
+
+  studentId String?
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  teacherId String?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@map("sessions")
+}
+
+// ------------------------------------------------------------
+// LESSONS
+// ------------------------------------------------------------
+
+model Lesson {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  type        LessonType
+  skill       Skill
+  level       Level
+  fileUrl     String? // رابط الفيديو / PDF / الصورة المخزّن (S3 أو ما شابه)
+  audioUrl    String? // تسجيل صوتي اختياري مرافق لأي نوع درس (شرح إضافي مثلاً)
+  thumbnailUrl String?
+  durationSec Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  liveSession  LiveSession?
+  activityLogs ActivityLog[]
+
+  @@index([skill, level])
+  @@map("lessons")
+}
+
+model LiveSession {
+  id       String             @id @default(uuid())
+  status   LiveSessionStatus  @default(SCHEDULED)
+  startAt  DateTime
+  endAt    DateTime?
+  provider String? // "jitsi" | "zoom" | "self-hosted"
+  joinUrl  String?
+
+  lessonId String @unique
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("live_sessions")
+}
+
+model Flashcard {
+  id           String @id @default(uuid())
+  question     String
+  optionA      String
+  optionB      String
+  optionC      String
+  correctIndex Int // 0 = A, 1 = B, 2 = C
+  skill        Skill?
+  level        Level?
+
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("flashcards")
+}
+
+// ------------------------------------------------------------
+// ACTIVITY / ANALYTICS
+// ------------------------------------------------------------
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  watchedSeconds Int @default(0)
+
+  @@index([lessonId])
+  @@index([studentId])
+  @@map("activity_logs")
+}

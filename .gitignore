@@ -1,0 +1,29 @@
+# الأسرار — لا تُرفع أبدًا (فقط .env.example يُرفع)
+.env
+.env.local
+.env.*.local
+
+# الحزم
+node_modules/
+
+# مخرجات البناء
+dist/
+build/
+
+# الملفات المرفوعة من المستخدمين (فيديوهات/صور/PDF فعلية)
+uploads/
+
+# ملفات Prisma المولّدة
+prisma/dev.db
+prisma/dev.db-journal
+
+# ملفات النظام والمحرر
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+npm-debug.log*
+
+# أي مفاتيح أو شهادات قد تُضاف لاحقًا
+*.pem
+*.key
