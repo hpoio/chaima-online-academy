@@ -9,7 +9,7 @@ import studentsRoutes from "@/modules/students/students.routes";
 import lessonsRoutes from "@/modules/lessons/lessons.routes";
 import statsRoutes from "@/modules/stats/stats.routes";
 import flashcardsRoutes from "@/modules/flashcards/flashcards.routes";
-import mediaRoutes from "@/modules/media/media.routes";
+import mediaRoutes from "@/media/media.routes";
 
 export const app = express();
 
