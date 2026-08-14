@@ -1,3 +1,4 @@
+import helmet from "helmet";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -12,7 +13,7 @@ import flashcardsRoutes from "@/modules/flashcards/flashcards.routes";
 import mediaRoutes from "@/media/media.routes";
 
 export const app = express();
-
+app.use(helmet());
 app.use(cors({
   origin(origin, callback) {
     // طلبات بدون Origin (مثل curl أو تطبيقات موبايل أصلية) مسموحة دائمًا
