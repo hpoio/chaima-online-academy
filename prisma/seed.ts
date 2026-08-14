@@ -12,7 +12,7 @@ async function main() {
 
   const teacher = await prisma.teacher.upsert({
     where: { email },
-    update: {},
+    update: { passwordHash: await hashPassword(password) },
     create: { name: "الأستاذة شيماء", email, passwordHash: await hashPassword(password) },
   });
 
