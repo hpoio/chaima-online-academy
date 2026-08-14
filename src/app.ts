@@ -14,7 +14,16 @@ import flashcardsRoutes from "@/modules/flashcards/flashcards.routes";
 import mediaRoutes from "@/media/media.routes";
 
 export const app = express();
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'"],
+      },
+    },
+  })
+);
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.get("/teacher", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "teacher.html")));
 app.get("/student", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "student.html")));
