@@ -1,3 +1,4 @@
+import path from "path";
 import helmet from "helmet";
 import express from "express";
 import cors from "cors";
@@ -14,6 +15,7 @@ import mediaRoutes from "@/media/media.routes";
 
 export const app = express();
 app.use(helmet());
+app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cors({
   origin(origin, callback) {
     // طلبات بدون Origin (مثل curl أو تطبيقات موبايل أصلية) مسموحة دائمًا
