@@ -16,6 +16,8 @@ import mediaRoutes from "@/media/media.routes";
 export const app = express();
 app.use(helmet());
 app.use(express.static(path.join(__dirname, "..", "public")));
+app.get("/teacher", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "teacher.html")));
+app.get("/student", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "student.html")));
 app.use(cors({
   origin(origin, callback) {
     // طلبات بدون Origin (مثل curl أو تطبيقات موبايل أصلية) مسموحة دائمًا
